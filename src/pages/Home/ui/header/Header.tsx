@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 
-
 const Header = () => {
   return (
     <div className="flex justify-between mt-14">
@@ -10,6 +9,6 @@ const Header = () => {
       </Link>
     </div>
   );
-}
+};
 
-export default Header
+export default Header;

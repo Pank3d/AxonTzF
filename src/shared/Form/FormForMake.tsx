@@ -1,43 +1,27 @@
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { submitFormDataMake } from "./SubmitForData";
 
-
-const FormForMake = ({ text }: { text: any }) => {
+const FormForMake = ({ text }: { text: string}) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
     defaultValues: {
-      packsNumber: "",
+      packsNumber: null,
       packageType: "",
       isArchived: false,
       description: "",
     },
   });
-  const history = useNavigate()
+  const history = useNavigate();
 
- const onSubmit = async (data: any) => {
-   try {
-     const newData = {
-       packsNumber: Number(data.packsNumber), 
-       packageType: data.packageType,
-       isArchived: data.isArchived,
-       description: data.description,
-     };
-
-     const response = await axios.post(
-       "http://localhost:8081/productTypes",
-       newData
-     );
-
-     console.log("New product added:", response.data);
-     history("/");
-   } catch (error) {
-     console.error("Error adding product:", error);
-   }
- };
+  const onSubmit = (data: any) => {
+    submitFormDataMake(data, () => {
+      history("/");
+    });
+  };
 
   return (
     <>
@@ -71,7 +55,10 @@ const FormForMake = ({ text }: { text: any }) => {
 
           <label className=" mt-6">
             Архивировано <span className=" text-orange-600">*</span>
-            <input type="checkbox" {...register("isArchived", {required:false})} />
+            <input
+              type="checkbox"
+              {...register("isArchived", { required: false })}
+            />
             {errors.isArchived && <p>Это поле обязательно</p>}
           </label>
 
@@ -90,7 +77,7 @@ const FormForMake = ({ text }: { text: any }) => {
           <button type="submit" className="pl-3 pt-4">
             Сохранить
           </button>
-          <button type="button" className="pl-3" onClick={() => history('/')}>
+          <button type="button" className="pl-3" onClick={() => history("/")}>
             Отмена
           </button>
         </form>

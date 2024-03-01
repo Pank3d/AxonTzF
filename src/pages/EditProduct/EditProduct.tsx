@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Form from "../../shared/Form/Form";
-import { Product } from "../../shared/type/type"; 
+import { Product } from "../../shared/type/type";
 import { selectProducts } from "../../shared/store/productSlce";
-
 function EditProduct() {
   const { productId } = useParams();
   const dispatch = useDispatch();

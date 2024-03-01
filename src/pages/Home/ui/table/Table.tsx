@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   createColumnHelper,
@@ -7,102 +6,22 @@ import {
   getCoreRowModel,
   flexRender,
 } from "@tanstack/react-table";
-import { Product, TableData } from "../../../../shared/type/type";
-import { useDispatch, useSelector } from "react-redux";
-import { getProduct, deleteProductById } from "../../../../shared/api/api";
-import { deleteProduct, selectProducts, setProducts } from "../../../../shared/store/productSlce";
+import { formatDate } from "./utils/formatData";
+import { TableData } from "../../../../shared/type/type";
+import { useProductData } from "./utils/UseProductData";
 
-interface TableDataWithId extends TableData {
-  id: string;
-}
-
-const columnHelper = createColumnHelper<TableDataWithId>();
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}.${month}.${year}`;
-};
+const columnHelper = createColumnHelper<TableData>();
 
 const Table = () => {
-  const dispatch = useDispatch();
-  const products = useSelector(selectProducts);
-  const [tableData, setTableData] = useState<TableDataWithId[]>([]);
-  const [tooltipContent, setTooltipContent] = useState<{
-    [key: string]: string;
-  }>({});
-  const [tooltipVisible, setTooltipVisible] = useState<{
-    [key: string]: boolean;
-  }>({});
+  const {
+    tableData,
+    tooltipContent,
+    tooltipVisible,
+    handleTooltip,
+    handleDeleteProduct,
+  } = useProductData();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const products = await getProduct();
-        dispatch(setProducts(products));
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      }
-    };
-
-    fetchData();
-
-    return () => {};
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (products) {
-      const sortedProduct = products
-        .slice()
-        .sort(
-          (
-            a: { createdAt: string | number | Date },
-            b: { createdAt: string | number | Date }
-          ) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      const newData: TableDataWithId[] = sortedProduct.map(
-        (item: Product, index: number) => ({
-          id: item.id,
-          number: index + 1,
-          packsNumber: Number(item.packsNumber),
-          packageType: item.packageType,
-          createdAt: item.createdAt,
-          isArchived: item.isArchived,
-          description: item.description || "",
-          actions: () => {},
-        })
-      );
-      setTableData(newData);
-
-      const initialTooltipContent: { [key: string]: string } = {};
-      const initialTooltipVisible: { [key: string]: boolean } = {};
-      sortedProduct.forEach((item: { id: string | number }) => {
-        initialTooltipContent[item.id] = "";
-        initialTooltipVisible[item.id] = false;
-      });
-      setTooltipContent(initialTooltipContent);
-      setTooltipVisible(initialTooltipVisible);
-    }
-  }, [products]);
-
-  const handleTooltip = (id: string, description: string) => {
-    setTooltipContent({ ...tooltipContent, [id]: description });
-    setTooltipVisible({ ...tooltipVisible, [id]: !tooltipVisible[id] });
-  };
-
-  const handleDeleteProduct = async (id: string) => {
-    try {
-      await deleteProductById(id);
-      dispatch(deleteProduct(id));
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      alert("Произошла ошибка при удалении продукта.");
-    }
-  };
-
-  const columns: ColumnDef<TableDataWithId, any>[] = [
+  const columns: ColumnDef<TableData, any>[] = [
     columnHelper.accessor("number", {
       cell: (info) => info.row.original.number,
       header: () => <span className="px-4 py-2">№</span>,
@@ -174,40 +93,45 @@ const Table = () => {
   });
 
   return (
-    <div className="p-2 mt-10">
-      <table className="w-full">
-        <thead className="px-4 py-2 border border-gray-300">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="px-4 py-2 border border-gray-300"
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="px-4 py-2 border border-gray-300">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className="p-2 mt-10">
+        <table className="w-full">
+          <thead className="px-4 py-2 border border-gray-300">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="px-4 py-2 border border-gray-300"
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <tr key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <td
+                    key={cell.id}
+                    className="px-4 py-2 border border-gray-300"
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 };
 
