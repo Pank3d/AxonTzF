@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+*{
+    margin:0;
+    padding:0;
+}
+
+.table{
+    width: 1090px;
+}
+
+.wrapper{
+    margin-left: 226px;
+    margin-right: 224px;
+    height:100vh
+}
+
+.form-wrapper{
+    margin-left: 424px; 
+    margin-right: 425px;
+}
+
+.widParam{
+    width: 500px;
+    height: 95px;
+}
